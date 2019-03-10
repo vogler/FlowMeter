@@ -1,6 +1,5 @@
 // https://maker.pro/arduino/tutorial/how-to-interface-arduino-with-flow-rate-sensor-to-measure-liquid
 
-byte ledPin = BUILTIN_LED;
 byte hallPin = D5;
 byte tempPin = A0;
 byte interrupt;
@@ -21,13 +20,21 @@ unsigned long totalMilliLitres;
 
 unsigned long oldTime;
 
+// 128x32 OLED display SSD1306
+#include <Adafruit_GFX.h>
+// #include <Fonts/FreeSans12pt7b.h>
+#include <Adafruit_SSD1306.h>
+Adafruit_SSD1306 OLED(0); // default I2C: D1=SCK, D2=SDA
+
 void setup()
 {
   Serial.begin(38400);
   Serial.println("Start");
 
-  pinMode(ledPin, OUTPUT);
-  digitalWrite(ledPin, HIGH);
+  OLED.begin();
+  // OLED.setFont(&FreeSans12pt7b);
+  OLED.clearDisplay();
+  OLED.setTextColor(WHITE);
 
   pinMode(hallPin, INPUT);
   digitalWrite(hallPin, HIGH);
@@ -77,11 +84,15 @@ void loop()
 
     unsigned int frac;
 
+    OLED.clearDisplay();
+    OLED.setCursor(0, 0);
     Serial.print("Pulses: "); // since last interrupt
     Serial.print(int(pulseCount));
     // Print the flow rate for this second in litres / minute
     Serial.print("  Flow rate: ");
     Serial.print(flowRate, 2);
+    OLED.print(flowRate, 2);
+    OLED.println(" L/min");
     Serial.print(" L/min = ");
     Serial.print(flowMilliLitres);
     Serial.print(" mL/Sec");
@@ -89,6 +100,8 @@ void loop()
     Serial.print("  Total: ");
     Serial.print(totalMilliLitres);
     Serial.print("mL");
+    OLED.print(totalMilliLitres/1000.0, 2);
+    OLED.println(" L");
 
     int vo = analogRead(A0);
     //Serial.print("  A0: "); Serial.print(vo);
@@ -104,6 +117,10 @@ void loop()
     Serial.print("  Temperature: ");
     Serial.print(T);
     Serial.println(" C");
+    OLED.print(T);
+    OLED.println(" C");
+
+    OLED.display();
 
     // Reset the pulse counter so we can start incrementing again
     pulseCount = 0;
