@@ -1,5 +1,3 @@
-#include <Arduino.h>
-#include <d1_mini/pins_arduino.h>
 // https://maker.pro/arduino/tutorial/how-to-interface-arduino-with-flow-rate-sensor-to-measure-liquid
 
 byte ledPin = BUILTIN_LED;
