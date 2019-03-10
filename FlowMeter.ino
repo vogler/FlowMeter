@@ -38,7 +38,7 @@ void pulseCounter() { // ISR
 float flow_l_min;
 unsigned short flow_ml_s;
 unsigned long total_ml;
-unsigned long curTime, oldTime;
+unsigned long curTime, oldTime, flowTime, flowStartTime;
 
 void loop() {
   curTime = millis();
@@ -49,44 +49,48 @@ void loop() {
     total_ml += flow_ml_s;
     oldTime = curTime;
 
-    OLED.clearDisplay();
-    OLED.setCursor(0, 0);
-    Serial.print("Pulses: "); // since last interrupt
-    Serial.print(int(pulseCount));
-    Serial.print("  Flow rate: ");
-    Serial.print(flow_l_min, 2);
-    OLED.print(flow_l_min, 2);
-    OLED.println(" L/min");
-    Serial.print(" L/min = ");
-    Serial.print(flow_ml_s);
-    Serial.print(" mL/Sec");
-    Serial.print("  Total: ");
-    Serial.print(total_ml);
-    Serial.print("mL");
-    OLED.print(total_ml / 1000.0, 2);
-    OLED.println(" L");
+    if (flow_ml_s > 0) {
+      flowTime = curTime;
+      if (total_ml == 0) flowStartTime = curTime;
+      OLED.clearDisplay();
+      OLED.setCursor(0, 0);
 
-    int vo = analogRead(A0);
-    //Serial.print("  A0: "); Serial.print(vo);
-    R2 = R1 * (1023.0 / (float)vo - 1.0);
-    //logR2 = log(R2);
-    Serial.print("  R2: ");
-    Serial.print(R2);
-    //Serial.print("  logR2: "); Serial.print(logR2);
-    // T = (1.0 / (c1 + c2 * logR2 + c3 * logR2 * logR2 * logR2)) - 273.15;
-    // T2= T1*B/ln(R1/R2)  /  ( B/ln(R1/R2) - T1)
-    float T1 = 25 + 273.15;
-    float ln = log(50000 / R2);
-    T = T1 * B / ln / (B / ln - T1) - 273.15;
-    Serial.print("  Temperature: ");
-    Serial.print(T);
-    Serial.println(" C");
-    OLED.print(T);
-    OLED.println(" C");
+      Serial.printf("Pulses: %d", pulseCount); // since last interrupt
+      Serial.printf("  Flow rate: %.2f l/min %d ml/sec", flow_l_min, flow_ml_s);
+      Serial.printf("  Total: %d ml", total_ml);
+      OLED.print(flow_l_min, 2);
+      OLED.println(" l/min");
+      OLED.print(total_ml / 1000.0, 2);
+      OLED.println(" l");
 
-    OLED.display();
+      int vo = analogRead(A0);
+      //Serial.print("  A0: "); Serial.print(vo);
+      R2 = R1 * (1023.0 / (float)vo - 1.0);
+      //logR2 = log(R2);
+      Serial.print("  R2: ");
+      Serial.print(R2);
+      //Serial.print("  logR2: "); Serial.print(logR2);
+      // T = (1.0 / (c1 + c2 * logR2 + c3 * logR2 * logR2 * logR2)) - 273.15;
+      // T2= T1*B/ln(R1/R2)  /  ( B/ln(R1/R2) - T1)
+      float T1 = 25 + 273.15;
+      float ln = log(50000 / R2);
+      T = T1 * B / ln / (B / ln - T1) - 273.15;
+      Serial.printf("  Temperature: %f C", T);
+      OLED.print(T);
+      OLED.println(" C");
 
-    // Reset the pulse counter so we can start incrementing again
+      int s = round((flowTime - flowStartTime)/1000.0);
+      Serial.printf("  Time: %02d:%02d", s/60, s%60);
+      OLED.printf("%02d m %02d s", s/60, s%60);
+
+      Serial.println();
+      OLED.display();
+    } else if (curTime - flowTime > 30000) {
+      total_ml = 0;
+      OLED.clearDisplay();
+      OLED.display();
+    }
+
     pulseCount = 0;
   }
 }
