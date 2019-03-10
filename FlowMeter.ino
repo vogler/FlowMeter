@@ -37,13 +37,6 @@ void setup()
   OLED.setTextColor(WHITE);
 
   pinMode(hallPin, INPUT_PULLUP);
-
-  pulseCount        = 0;
-  flowRate          = 0.0;
-  flowMilliLitres   = 0;
-  totalMilliLitres  = 0;
-  oldTime           = 0;
-
   intrPin = digitalPinToInterrupt(hallPin);
   Serial.print("Interrupt on pin ");
   Serial.println(intrPin);
