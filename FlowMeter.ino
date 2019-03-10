@@ -2,7 +2,6 @@
 
 byte hallPin = D5;
 byte tempPin = A0;
-byte intrPin;
 
 // The hall-effect flow sensor outputs approximately 10 pulses per second per litre/minute of flow.
 float calibrationFactor = 10;
@@ -37,19 +36,13 @@ void setup()
   OLED.setTextColor(WHITE);
 
   pinMode(hallPin, INPUT_PULLUP);
-  intrPin = digitalPinToInterrupt(hallPin);
-  Serial.print("Interrupt on pin ");
-  Serial.println(intrPin);
-  attachInterrupt(intrPin, pulseCounter, FALLING); // FALLING = transition from HIGH to LOW
+  attachInterrupt(digitalPinToInterrupt(hallPin), pulseCounter, FALLING); // FALLING = transition from HIGH to LOW
 }
 
 
 void loop()
 {
   if ((millis() - oldTime) > 1000) {  // Only process counters once per second
-    // Disable the intrPin while calculating flow rate and sending the value to the host
-    detachInterrupt(intrPin);
-
     // Because this loop may not complete in exactly 1 second intervals we calculate
     // the number of milliseconds that have passed since the last execution and use
     // that to scale the output. We also apply the calibrationFactor to scale the output
@@ -75,7 +68,7 @@ void loop()
 
     OLED.clearDisplay();
     OLED.setCursor(0, 0);
-    Serial.print("Pulses: "); // since last intrPin
+    Serial.print("Pulses: "); // since last interrupt
     Serial.print(int(pulseCount));
     // Print the flow rate for this second in litres / minute
     Serial.print("  Flow rate: ");
@@ -113,9 +106,6 @@ void loop()
 
     // Reset the pulse counter so we can start incrementing again
     pulseCount = 0;
-
-    // Enable the intrPin again now that we've finished sending output
-    attachInterrupt(intrPin, pulseCounter, FALLING);
   }
 }
 
