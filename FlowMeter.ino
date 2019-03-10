@@ -2,11 +2,11 @@
 
 byte hallPin = D5;
 byte tempPin = A0;
-byte interrupt;
+byte intrPin;
 
 // The hall-effect flow sensor outputs approximately 10 pulses per second per litre/minute of flow.
 float calibrationFactor = 10;
-// temperature
+// thermistor for temperature
 float R1 = 46400;
 float logR2, R2, T;
 // float c1 = 1.009249522e-03, c2 = 2.378405444e-04, c3 = 2.019202697e-07;
@@ -29,15 +29,14 @@ Adafruit_SSD1306 OLED(0); // default I2C: D1=SCK, D2=SDA
 void setup()
 {
   Serial.begin(38400);
-  Serial.println("Start");
+  Serial.println("Start FlowMeter");
 
   OLED.begin();
   // OLED.setFont(&FreeSans12pt7b);
   OLED.clearDisplay();
   OLED.setTextColor(WHITE);
 
-  pinMode(hallPin, INPUT);
-  digitalWrite(hallPin, HIGH);
+  pinMode(hallPin, INPUT_PULLUP);
 
   pulseCount        = 0;
   flowRate          = 0.0;
@@ -45,21 +44,18 @@ void setup()
   totalMilliLitres  = 0;
   oldTime           = 0;
 
-  interrupt = digitalPinToInterrupt(hallPin);
+  intrPin = digitalPinToInterrupt(hallPin);
   Serial.print("Interrupt on pin ");
-  Serial.println(interrupt);
-
-  // The Hall-effect sensor is connected to pin 2 which uses interrupt 0.
-  // Configured to trigger on a FALLING state change (transition from HIGH state to LOW state)
-  attachInterrupt(interrupt, pulseCounter, FALLING);
+  Serial.println(intrPin);
+  attachInterrupt(intrPin, pulseCounter, FALLING); // FALLING = transition from HIGH to LOW
 }
 
 
 void loop()
 {
-  if ((millis() - oldTime) > 1000) {   // Only process counters once per second
-    // Disable the interrupt while calculating flow rate and sending the value to the host
-    detachInterrupt(interrupt);
+  if ((millis() - oldTime) > 1000) {  // Only process counters once per second
+    // Disable the intrPin while calculating flow rate and sending the value to the host
+    detachInterrupt(intrPin);
 
     // Because this loop may not complete in exactly 1 second intervals we calculate
     // the number of milliseconds that have passed since the last execution and use
@@ -86,7 +82,7 @@ void loop()
 
     OLED.clearDisplay();
     OLED.setCursor(0, 0);
-    Serial.print("Pulses: "); // since last interrupt
+    Serial.print("Pulses: "); // since last intrPin
     Serial.print(int(pulseCount));
     // Print the flow rate for this second in litres / minute
     Serial.print("  Flow rate: ");
@@ -125,8 +121,8 @@ void loop()
     // Reset the pulse counter so we can start incrementing again
     pulseCount = 0;
 
-    // Enable the interrupt again now that we've finished sending output
-    attachInterrupt(interrupt, pulseCounter, FALLING);
+    // Enable the intrPin again now that we've finished sending output
+    attachInterrupt(intrPin, pulseCounter, FALLING);
   }
 }
 
