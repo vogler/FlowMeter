@@ -1,8 +1,8 @@
 // https://maker.pro/arduino/tutorial/how-to-interface-arduino-with-flow-rate-sensor-to-measure-liquid
 
 byte ledPin = BUILTIN_LED;
-byte hallPin = D1;
-byte tempPin   = A0;
+byte hallPin = D5;
+byte tempPin = A0;
 byte interrupt;
 
 // The hall-effect flow sensor outputs approximately 10 pulses per second per litre/minute of flow.
