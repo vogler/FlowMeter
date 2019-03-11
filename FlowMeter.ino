@@ -97,7 +97,7 @@ void mqtt_connect(){
     clientId += String(random(0xffff), HEX);
     if (mqtt.connect(clientId.c_str())) {
       Serial.printf("connected as %s to mqtt://%s\n", clientId.c_str(), MQTT_SERVER);
-      mqtt.publish(MQTT_TOPIC "/status", json("time: %ul, event: 'connect', clientId: '%s'", millis(), clientId.c_str()));
+      mqtt.publish(MQTT_TOPIC "/status", json("time: %lu, event: 'connect', clientId: '%s'", millis(), clientId.c_str())); // TODO millis() is really just the ms, not full unix timestamp!
       // mqtt.subscribe("");
     } else {
       Serial.printf("failed, rc=%d. retry in 5s.\n", mqtt.state());
@@ -196,7 +196,7 @@ void loop() {
       Serial.println();
       OLED.display();
     } else if (curTime - flowTime > 30000 && total_ml > 0) {
-      mqtt.publish(MQTT_TOPIC "/stop", json("time: %lu, startTime: %ul, duration: %ul, total_ml: %ul", curTime, flowStartTime, curTime - flowStartTime, total_ml));
+      mqtt.publish(MQTT_TOPIC "/stop", json("time: %lu, startTime: %lu, duration: %lu, total_ml: %lu", curTime, flowStartTime, curTime - flowStartTime, total_ml));
       total_ml = 0;
       OLED.clearDisplay();
       OLED.display();
