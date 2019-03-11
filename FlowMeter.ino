@@ -20,6 +20,10 @@ Adafruit_SSD1306 OLED(0); // default I2C: D1=SCK, D2=SDA
 // WiFi
 #include <ESP8266WiFi.h>
 WiFiClient wifi;
+// OTA update
+#include <ESP8266mDNS.h>
+#include <WiFiUdp.h>
+#include <ArduinoOTA.h>
 // MQTT
 #define MQTT_TOPIC "sensors/shower"
 #include <PubSubClient.h>
@@ -33,14 +37,56 @@ char buf[200];
 void setup_wifi() {
   delay(5);
   Serial.printf("Connecting to AP %s", WIFI_SSID);
+  WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+    delay(2000);
     Serial.print(".");
+    ESP.restart();
   }
   Serial.println();
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
+}
+
+#define OLED_stat(...) OLED.clearDisplay(); OLED.setCursor(0, 0); OLED.setTextSize(2); OLED.printf(__VA_ARGS__); OLED.display(); OLED.setTextSize(1)
+
+void setup_OTA() {
+  ArduinoOTA.onStart([]() {
+    String type;
+    if (ArduinoOTA.getCommand() == U_FLASH) {
+      type = "sketch";
+    } else { // U_SPIFFS
+      type = "filesystem";
+    }
+    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+    Serial.println("OTA: Start updating " + type);
+    OLED_stat("OTA start");
+  });
+  ArduinoOTA.onEnd([]() {
+    Serial.println("\nOTA: Done");
+    OLED.clearDisplay(); OLED.display();
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("OTA: Progress: %u%%\r", (progress / (total / 100)));
+    OLED_stat("OTA: %u%%", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("OTA Error[%u]: ", error);
+    OLED_stat("OTA fail: %u\n", error);
+    if (error == OTA_AUTH_ERROR) {
+      Serial.println("Auth Failed");
+    } else if (error == OTA_BEGIN_ERROR) {
+      Serial.println("Begin Failed");
+    } else if (error == OTA_CONNECT_ERROR) {
+      Serial.println("Connect Failed");
+    } else if (error == OTA_RECEIVE_ERROR) {
+      Serial.println("Receive Failed");
+    } else if (error == OTA_END_ERROR) {
+      Serial.println("End Failed");
+    }
+  });
+  ArduinoOTA.begin();
 }
 
 void mqtt_connect(){
@@ -74,14 +120,13 @@ void setup_mqtt() {
 void setup() {
   Serial.begin(38400);
   Serial.println("Start FlowMeter");
-  setup_wifi();
-  setup_mqtt();
-  Serial.println("Ready to measure!");
-
   OLED.begin();
   // OLED.setFont(&FreeSans12pt7b);
-  OLED.clearDisplay();
   OLED.setTextColor(WHITE);
+  setup_wifi();
+  setup_OTA();
+  setup_mqtt();
+  Serial.println("Ready to measure!");
 
   pinMode(hallPin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(hallPin), pulseCounter, FALLING); // FALLING = transition from HIGH to LOW
@@ -98,9 +143,10 @@ unsigned long total_ml;
 unsigned long curTime, oldTime, flowTime, flowStartTime;
 
 void loop() {
+  ArduinoOTA.handle();
+  mqtt.loop();
   curTime = millis();
   if (curTime - oldTime > 1000) { // only process counters once per second
-    mqtt.loop();
     // Because this loop may not complete in exactly 1 second intervals we calculate the number of milliseconds that have passed since the last execution and use that to scale the output. We also apply the pulseFactor to scale the output based on the number of pulses per second per units of measure (litres/minute in this case) coming from the sensor.
     flow_l_min = ((1000.0 / (curTime - oldTime)) * pulseCount) / pulseFactor;
     flow_ml_s = (flow_l_min / 60) * 1000;
