@@ -149,7 +149,7 @@ void loop() {
 
       Serial.println();
       OLED.display();
-    } else if (curTime - flowTime > 30000) {
+    } else if (curTime - flowTime > 30000 && total_ml > 0) {
       mqtt.publish(MQTT_TOPIC "/stop", json("time: %lu, startTime: %ul, duration: %ul, total_ml: %ul", curTime, flowStartTime, curTime - flowStartTime, total_ml));
       total_ml = 0;
       OLED.clearDisplay();
