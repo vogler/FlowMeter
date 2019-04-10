@@ -13,7 +13,7 @@ float B = 3950;
 
 // 128x32 OLED display SSD1306
 #include <Adafruit_GFX.h>
-// #include <Fonts/FreeSans12pt7b.h>
+#include <Fonts/FreeSans9pt7b.h>
 #include <Adafruit_SSD1306.h>
 Adafruit_SSD1306 OLED(0); // default I2C: D1=SCK, D2=SDA
 
@@ -121,7 +121,7 @@ void setup() {
   Serial.begin(38400);
   Serial.println("Start FlowMeter");
   OLED.begin();
-  // OLED.setFont(&FreeSans12pt7b);
+  OLED.setFont(&FreeSans9pt7b);
   OLED.setTextColor(WHITE);
   setup_wifi();
   setup_OTA();
@@ -163,13 +163,17 @@ void loop() {
       }
       total_ml += flow_ml_s;
       OLED.clearDisplay();
-      OLED.setCursor(0, 0);
+      // frame for layouting during development
+      OLED.drawLine(0, 0, 0, 64, WHITE);
+      OLED.drawLine(127, 0, 127, 64, WHITE);
+      OLED.setCursor(0, 12);
 
       Serial.printf("Pulses: %d", pulseCount); // since last interrupt
       Serial.printf("  Flow rate: %.2f l/min %d ml/sec", flow_l_min, flow_ml_s);
       Serial.printf("  Total: %d ml", total_ml);
       OLED.print(flow_l_min, 2);
-      OLED.println(" l/min");
+      OLED.println(" l/m");
+      OLED.setCursor(0, 30);
       OLED.print(total_ml / 1000.0, 2);
       OLED.println(" l");
 
@@ -186,12 +190,14 @@ void loop() {
       float ln = log(50000 / R2);
       T = T1 * B / ln / (B / ln - T1) - 273.15;
       Serial.printf("  Temperature: %f C", T);
+      OLED.setCursor(80, 12);
       OLED.print(T);
-      OLED.println(" C");
+      // OLED.println(" C");
 
       int s = round((flowTime - flowStartTime)/1000.0);
       Serial.printf("  Time: %02d:%02d", s/60, s%60);
-      OLED.printf("%02d m %02d s", s/60, s%60);
+      OLED.setCursor(80, 30);
+      OLED.printf("%02d:%02d", s/60, s%60);
 
       mqtt.publish(MQTT_TOPIC "/flow", json("time: %lu, flow: %u, temp: %f", curTime, flow_ml_s, T));
 
