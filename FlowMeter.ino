@@ -141,25 +141,27 @@ float flow_l_min;
 unsigned short flow_ml_s;
 unsigned long total_ml;
 unsigned long curTime, oldTime, flowTime, flowStartTime;
+unsigned short interval;
 
 void loop() {
   ArduinoOTA.handle();
   mqtt.loop();
   curTime = millis();
-  if (curTime - oldTime > 1000) { // only process counters once per second
+  interval = curTime - oldTime;
+  if (interval > 1000) { // only process counters once per second
     // Because this loop may not complete in exactly 1 second intervals we calculate the number of milliseconds that have passed since the last execution and use that to scale the output. We also apply the pulseFactor to scale the output based on the number of pulses per second per units of measure (litres/minute in this case) coming from the sensor.
-    flow_l_min = ((1000.0 / (curTime - oldTime)) * pulseCount) / pulseFactor;
+    flow_l_min = (1000.0 / interval) * pulseCount / pulseFactor;
     flow_ml_s = (flow_l_min / 60) * 1000;
-    total_ml += flow_ml_s;
     oldTime = curTime;
 
     if (flow_ml_s > 0) {
       flowTime = curTime;
       if (!mqtt.connected()) mqtt_connect();
       if (total_ml == 0) {
-        flowStartTime = curTime;
+        flowStartTime = curTime - interval; // flow started before this interval
         mqtt.publish(MQTT_TOPIC "/start", json("time: %lu", flowStartTime));
       }
+      total_ml += flow_ml_s;
       OLED.clearDisplay();
       OLED.setCursor(0, 0);
 
