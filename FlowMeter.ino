@@ -97,7 +97,7 @@ void mqtt_connect(){
     clientId += String(random(0xffff), HEX);
     if (mqtt.connect(clientId.c_str())) {
       Serial.printf("connected as %s to mqtt://%s\n", clientId.c_str(), MQTT_SERVER);
-      mqtt.publish(MQTT_TOPIC "/status", json("time: %lu, event: 'connect', clientId: '%s'", millis(), clientId.c_str())); // TODO millis() is really just the ms, not full unix timestamp!
+      mqtt.publish(MQTT_TOPIC "/status", json("\"time\": %lu, \"event\": \"connect\", \"clientId\": \"%s\"", millis(), clientId.c_str())); // TODO millis() is really just the ms, not full unix timestamp!
       // mqtt.subscribe("");
     } else {
       Serial.printf("failed, rc=%d. retry in 5s.\n", mqtt.state());
@@ -159,7 +159,7 @@ void loop() {
       if (!mqtt.connected()) mqtt_connect();
       if (total_ml == 0) {
         flowStartTime = curTime - interval; // flow started before this interval
-        mqtt.publish(MQTT_TOPIC "/start", json("time: %lu", flowStartTime));
+        mqtt.publish(MQTT_TOPIC "/start", json("\"time\": %lu", flowStartTime));
       }
       total_ml += flow_ml_s;
       OLED.clearDisplay();
@@ -199,12 +199,12 @@ void loop() {
       OLED.setCursor(80, 30);
       OLED.printf("%02d:%02d", s/60, s%60);
 
-      mqtt.publish(MQTT_TOPIC "/flow", json("time: %lu, flow: %u, temp: %f", curTime, flow_ml_s, T));
+      mqtt.publish(MQTT_TOPIC "/flow", json("\"time\": %lu, \"flow\": %u, \"temp\": %f", curTime, flow_ml_s, T));
 
       Serial.println();
       OLED.display();
     } else if (curTime - flowTime > 30000 && total_ml > 0) {
-      mqtt.publish(MQTT_TOPIC "/stop", json("time: %lu, startTime: %lu, duration: %lu, total_ml: %lu", curTime, flowStartTime, curTime - flowStartTime, total_ml));
+      mqtt.publish(MQTT_TOPIC "/stop", json("\"time\": %lu, \"startTime\": %lu, \"duration\": %lu, \"total_ml\": %lu", curTime, flowStartTime, curTime - flowStartTime, total_ml));
       total_ml = 0;
       OLED.clearDisplay();
       OLED.display();
