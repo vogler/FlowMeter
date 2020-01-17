@@ -148,7 +148,7 @@ void loop() {
   mqtt.loop();
   curTime = millis(); // will overflow after 49.71 days runtime
   interval = curTime - oldTime; // will be correct even on overflow since all are unsigned: 10 - (ULONG_MAX - 5) is 16
-  if (interval > 1000) { // only process counters once per second
+  if (interval > 1000) { // only process counters once per second; usually interval will be 1001
     // Because this loop may not complete in exactly 1 second intervals we calculate the number of milliseconds that have passed since the last execution and use that to scale the output (if the interval took longer than 1s, flow_l_min would be too high, so we have to devide by interval).
     // We also apply the pulseFactor to scale the output based on the number of pulses per second per units of measure (litres/minute in this case) coming from the sensor.
     flow_l_min = (1000.0 / interval) * pulseCount / pulseFactor;
