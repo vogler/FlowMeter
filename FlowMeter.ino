@@ -139,6 +139,7 @@ void pulseCounter() { // ISR
 
 float flow_l_min;
 unsigned short flow_ml_s;
+unsigned short flows; // intervals with flow; interrupt is triggered once by turning the light switch on/off (even if light is turned off), so we filter those out by delaying mqtt messages by one interval
 unsigned long total_ml;
 unsigned long curTime, oldTime, flowTime, flowStartTime;
 unsigned short interval;
@@ -157,9 +158,12 @@ void loop() {
 
     if (flow_ml_s > 0) {
       flowTime = curTime;
+      flows++;
       if (!mqtt.connected()) mqtt_connect();
       if (total_ml == 0) {
         flowStartTime = curTime - interval; // flow started before this interval
+      }
+      if (flows == 2) { // if flow is triggered by light, we ignore flow 1 and it will be reset by the timeout
         mqtt.publish(MQTT_TOPIC "/start", json("\"millis\": %lu", flowStartTime));
       }
       total_ml += flow_ml_s;
@@ -200,12 +204,15 @@ void loop() {
       OLED.setCursor(80, 30);
       OLED.printf("%02d:%02d", s/60, s%60);
 
-      mqtt.publish(MQTT_TOPIC "/flow", json("\"millis\": %lu, \"flow\": %u, \"temp\": %f", curTime, flow_ml_s, T));
+      if (flows >= 2)
+        mqtt.publish(MQTT_TOPIC "/flow", json("\"millis\": %lu, \"flow\": %u, \"temp\": %f", curTime, flow_ml_s, T));
 
       Serial.println();
       OLED.display();
     } else if (curTime - flowTime > 30000 && total_ml > 0) {
-      mqtt.publish(MQTT_TOPIC "/stop", json("\"millis\": %lu, \"startMillis\": %lu, \"duration\": %lu, \"total_ml\": %lu", curTime, flowStartTime, curTime - flowStartTime, total_ml));
+      if (flows >= 2)
+        mqtt.publish(MQTT_TOPIC "/stop", json("\"millis\": %lu, \"startMillis\": %lu, \"duration\": %lu, \"total_ml\": %lu", curTime, flowStartTime, curTime - flowStartTime, total_ml));
+      flows = 0;
       total_ml = 0;
       OLED.clearDisplay();
       OLED.display();
