@@ -211,7 +211,7 @@ void loop() {
       OLED.display();
     } else if (curTime - flowTime > 30000 && total_ml > 0) {
       if (flows >= 2)
-        mqtt.publish(MQTT_TOPIC "/stop", json("\"millis\": %lu, \"startMillis\": %lu, \"duration\": %lu, \"total_ml\": %lu", curTime, flowStartTime, curTime - flowStartTime, total_ml));
+        mqtt.publish(MQTT_TOPIC "/stop", json("\"millis\": %lu, \"startMillis\": %lu, \"duration\": %lu, \"total_ml\": %lu", curTime, flowStartTime, flowTime - flowStartTime, total_ml));
       flows = 0;
       total_ml = 0;
       OLED.clearDisplay();
