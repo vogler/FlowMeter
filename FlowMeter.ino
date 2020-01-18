@@ -1,4 +1,6 @@
 // flow rate code based on https://maker.pro/arduino/tutorial/how-to-interface-arduino-with-flow-rate-sensor-to-measure-liquid
+// If it fails to flash/boot, it's likely that pin D8 is high (boot from SD-card) and has to be connected to GND.
+// https://github.com/esp8266/esp8266-wiki/wiki/Boot-Process#esp-boot-modes
 
 // flow
 byte hallPin = D5;      // hall-effect flow sensor
@@ -216,8 +218,7 @@ void loop() {
         mqtt.publish(MQTT_TOPIC "/stop", json("\"millis\": %lu, \"startMillis\": %lu, \"duration\": %lu, \"total_ml\": %lu", curTime, flowStartTime, flowTime - flowStartTime, total_ml));
       flows = 0;
       total_ml = 0;
-      OLED.clearDisplay();
-      OLED.display();
+      OLED.clearDisplay(); OLED.display();
     }
 
     pulseCount = 0;
