@@ -1,0 +1,10 @@
+- 12.11.2018: [ordered](https://trade.aliexpress.com/order_detail.htm?spm=a2g0s.9042311.0.0.27424c4dmRTqEt&orderId=96461396622588) 1st flow sensor (male-female) for 7.10€
+  - [1/2" YF-B4 NTC Brass water Hall flow sensor flow rate temperature measurement METER](https://de.aliexpress.com/item/32787385391.html?spm=a2g0s.9042311.0.0.27424c4dTLcSpa)
+  - arrived on ??
+  - Only noticed then that it's not bidirectional and this one is exactly the wrong way around, such that I need to use two adapters for it.
+- 23.01.2019: [ordered](https://trade.aliexpress.com/order_detail.htm?spm=a2g0s.9042311.0.0.27424c4dmRTqEt&orderId=98372476502588) 2nd flow sensor (male-male) for 8.48€
+  - [water flow sensor meter indicator USC-HS21TIT brass hall turbine flowmeter temperature sensor 1-30L/min male G1/2" DN15 44mm](https://de.aliexpress.com/item/32576247103.html?spm=a2g0s.9042311.0.0.27424c4dTLcSpa)
+  - arrived on ??
+- 17.01.2020: Wemos D1 mini stopped working: a lot of rust on it.
+  - Fixed bug: duration was 30s too long (included timeout).
+- 18.01.2020: installed replacement Wemos D1 mini.
