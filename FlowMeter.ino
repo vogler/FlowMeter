@@ -132,6 +132,7 @@ void setup() {
   OLED.begin();
   OLED.setFont(&FreeSans9pt7b);
   OLED.setTextColor(WHITE);
+  OLED.clearDisplay(); OLED.display(); // clear to avoid noise
   setup_wifi();
   setup_OTA();
   setup_mqtt();
