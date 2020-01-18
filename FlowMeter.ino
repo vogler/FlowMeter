@@ -144,7 +144,7 @@ void setup() {
 
 float flow_l_min;
 unsigned short flow_ml_s;
-unsigned short flows; // intervals with flow; interrupt is triggered once by turning the light switch on/off (even if light is turned off), so we filter those out by delaying mqtt messages by one interval
+unsigned short flows; // intervals with flow; interrupt is triggered once by turning the light switch on/off (even if light is turned off, only if powered via socket, not via laptop), so we filter those out by delaying mqtt messages by one interval
 unsigned long total_ml;
 unsigned long curTime, oldTime, flowTime, flowStartTime;
 unsigned short interval;
