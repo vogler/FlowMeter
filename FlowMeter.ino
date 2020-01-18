@@ -117,6 +117,13 @@ void setup_mqtt() {
   mqtt_connect();
 }
 
+volatile byte pulseCount;
+// had to move this up (before attachInterrupt) because of the needed attribute after esp8266 upgrade from 2.5.0 to 2.6.3 in Arduino
+// without ICACHE_RAM_ATTR it crashes with 'ISR not in IRAM!', see https://github.com/esp8266/Arduino/issues/6127
+void ICACHE_RAM_ATTR pulseCounter() { // ISR
+  pulseCount++;
+}
+
 void setup() {
   Serial.begin(38400);
   Serial.println("Start FlowMeter");
@@ -130,11 +137,6 @@ void setup() {
 
   pinMode(hallPin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(hallPin), pulseCounter, FALLING); // FALLING = transition from HIGH to LOW
-}
-
-volatile byte pulseCount;
-void pulseCounter() { // ISR
-  pulseCount++;
 }
 
 float flow_l_min;
