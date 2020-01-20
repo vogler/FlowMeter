@@ -4,14 +4,20 @@
 
 // flow
 byte hallPin = D5;      // hall-effect flow sensor
-float pulseFactor = 10; // pulses/second per litre/minute
+float pulseFactor = 11; // pulses/second per litre/minute
 
 // temperature
 byte tempPin = A0; // thermistor
-float R1 = 46400;
+float R1 = 46800; // 47 kOhm resistor for voltage divider (measured 39.18 kOhm between A0 and GND)
 float logR2, R2, T;
+// https://www.thinksrs.com/downloads/programs/Therm%20Calc/NTCCalibrator/NTCcalculator.htm
+// -> using simpler β model over Steinhart-Hart model
 // float c1 = 1.009249522e-03, c2 = 2.378405444e-04, c3 = 2.019202697e-07;
 float B = 3950;
+// Temperatures IR:NTC (IR temp. gun aimed at bathtub with shower head ~5cm above : calculated temp.)
+// middle:  33.6:36.6 33.1:36.2
+// coldest: 11.0:12.60 10.6:12.24 10.3:11.97
+// warmest: 52.3:61.29 52.3:62.16
 
 // 128x32 OLED display SSD1306
 #include <Adafruit_GFX.h>
@@ -189,13 +195,12 @@ void loop() {
       OLED.print(total_ml / 1000.0, 2);
       OLED.println(" l");
 
-      int vo = analogRead(A0);
-      //Serial.print("  A0: "); Serial.print(vo);
+      int vo = analogRead(A0); // max. 1023.0 at 3.2 V
+      Serial.printf("  A0: %d", vo);
       R2 = R1 * (1023.0 / (float)vo - 1.0);
-      //logR2 = log(R2);
-      Serial.print("  R2: ");
-      Serial.print(R2);
-      //Serial.print("  logR2: "); Serial.print(logR2);
+      // logR2 = log(R2);
+      Serial.printf("  R2: %.2f", R2);
+      // Serial.printf("  logR2: %.2f", logR2);
       // T = (1.0 / (c1 + c2 * logR2 + c3 * logR2 * logR2 * logR2)) - 273.15;
       // T2= T1*B/ln(R1/R2)  /  ( B/ln(R1/R2) - T1)
       float T1 = 25 + 273.15;
@@ -223,7 +228,6 @@ void loop() {
       total_ml = 0;
       OLED.clearDisplay(); OLED.display();
     }
-
-    Serial.printf("Pulses during prev. loop: %d  ", pulseCount);
+    // Serial.printf("Pulses during prev. loop: %d  ", pulseCount);
   }
 }
