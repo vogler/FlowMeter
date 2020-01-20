@@ -157,7 +157,9 @@ void loop() {
   if (interval > 1000) { // only process counters once per second; usually interval will be 1001
     // Because this loop may not complete in exactly 1 second intervals we calculate the number of milliseconds that have passed since the last execution and use that to scale the output (if the interval took longer than 1s, flow_l_min would be too high, so we have to devide by interval).
     // We also apply the pulseFactor to scale the output based on the number of pulses per second per units of measure (litres/minute in this case) coming from the sensor.
-    flow_l_min = (1000.0 / interval) * pulseCount / pulseFactor;
+    int pulses = pulseCount; // store in local, so that we can immediately set it to zero and don't lose updates from interrupts during the calculations below
+    pulseCount = 0; // if we only set this at the end of the block, we'd overwrite up to 13 pulses (at full flow) that happened inbetween
+    flow_l_min = (1000.0 / interval) * pulses / pulseFactor;
     flow_ml_s = (flow_l_min / 60) * 1000;
     oldTime = curTime;
 
@@ -178,7 +180,7 @@ void loop() {
       OLED.drawLine(127, 0, 127, 64, WHITE);
       OLED.setCursor(0, 12);
 
-      Serial.printf("Pulses: %d", pulseCount); // since last interrupt
+      Serial.printf("Pulses: %d", pulses); // since last interrupt
       Serial.printf("  Flow rate: %.2f l/min %d ml/sec", flow_l_min, flow_ml_s);
       Serial.printf("  Total: %d ml", total_ml);
       OLED.print(flow_l_min, 2);
@@ -222,6 +224,6 @@ void loop() {
       OLED.clearDisplay(); OLED.display();
     }
 
-    pulseCount = 0;
+    Serial.printf("Pulses during prev. loop: %d  ", pulseCount);
   }
 }
