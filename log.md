@@ -8,7 +8,7 @@
 - 17.01.2020: Wemos D1 mini stopped working because it rusted because water was dripping from the ceiling (not from normal showering but leak from apartment above). See [rust-1.jpg](images/rust-1.jpg), [rust-2.jpg](images/rust-2.jpg).
 - 18.01.2020: installed replacement Wemos D1 mini (now on small breadboard with most wiring done under the PCB).
   - Fixed bug: duration was 30s too long (included timeout).
-  - Fixed reporting of flow when light switch is turned on/off by ignoring the first pulse interval.
+  - Fixed reporting of flow when light switch is turned on/off by ignoring the first pulse interval. TODO: might need to ignore up to 3 intervals ({1: 3156, 2: 147, 3: 3, 4: 0}).
   - Flow worked, but temperatures are way too high > 110-147 C.
 - 20.01.2020: debugged temperature issue.
   - A0 is not working right: ~2.8 V measured between GND and A0, when shorted it should report 0, but it led to reboot. 3V3-A0 works and reports 1023. Seems like A0 is connected to something it shouldn't be. Header pins are soldered fine.
@@ -28,3 +28,6 @@
     - Resistance is much less responsive than for the other flow sensor. This one seems to have NTC on the outside of the metal, where the other one has it on a pin that is screwed in so that it's in the stream.
     - E.g. changed water from 10C to 54C (~5s IR temp.), resistance took >1min to change from 77kOhm to 28kOhm, would have taken even longer to reach 20kOhm. The other flow sensor (84.6-13.6kOhm range) went from 80kOhm to 24kOhm in 10s and to 16kOhm in 20s.
     - -> changed back to 1st flow sensor
+- 22.01.2020:
+  - fix-logs.py to normalize logs
+  - fix-logs.sh to delete spurious start/flow{1,3}/stop sequences, kept ~/shower.org.log (after fix-logs.py) to drop diff from InfluxDB (TODO)
