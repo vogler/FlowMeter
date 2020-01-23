@@ -10,24 +10,35 @@
   - Fixed bug: duration was 30s too long (included timeout).
   - Fixed reporting of flow when light switch is turned on/off by ignoring the first pulse interval. TODO: might need to ignore up to 3 intervals ({1: 3156, 2: 147, 3: 3, 4: 0}).
   - Flow worked, but temperatures are way too high > 110-147 C.
-- 20.01.2020: debugged temperature issue.
+- 20.01.2020: debugged temperature issue with 1st replacement D1 mini -> 2nd replacement. Tried 2nd flow sensor. Fried 2nd replacement?
   - A0 is not working right: ~2.8 V measured between GND and A0, when shorted it should report 0, but it led to reboot. 3V3-A0 works and reports 1023. Seems like A0 is connected to something it shouldn't be. Header pins are soldered fine.
   - Soldered header pins to another replacement Wemos D1 mini. Everything works as expected: A0-3V3 reports 1023, A0-GND reports 0.
   - Temperatures seem as before. Took the chance to compare:
-    Directly measured NTC thermistor's resistance, temperature from table (cut-off):
-      middle:  34 kOhm -> ?
-      coldest: 84.60 kOhm -> 13.5 C
-      warmest: 13.57 kOhm -> 54 C?
-    Temperatures IR:NTC (IR temp. gun aimed at bathtub with shower head ~5cm above : calculated temp.)
-      middle:  33.6:36.6 33.1:36.2
-      coldest: 11.0:12.60 10.6:12.24 10.3:11.97
-      warmest: 52.3:61.29 52.3:62.16
-    Values seem good enough. Maybe water cools off between sensor and shower head.
+    - Directly measured NTC thermistor's resistance, temperature from table (cut-off):
+      - middle:  34 kOhm -> ?
+      - coldest: 84.60 kOhm -> 13.5 C
+      - warmest: 13.57 kOhm -> 54 C?
+    - Temperatures IR:NTC (IR temp. gun aimed at bathtub with shower head ~5cm above : calculated temp.)
+      - middle:  33.6:36.6 33.1:36.2
+      - coldest: 11.0:12.60 10.6:12.24 10.3:11.97
+      - warmest: 52.3:61.29 52.3:62.16
+    - Values seem good enough. Maybe water cools off between sensor and shower head.
   - Switched to 2nd flow sensor since it's shorter (see [flow-sensors.jpg](images/flow-sensors.jpg) for comparison) and have not tried it yet.
     - Flow seems to be the same. Resistance of thermistor is slightly different: ~32kOhm@34C, 77kOhm@10C, 20kOhm@55C.
-    - Resistance is much less responsive than for the other flow sensor. This one seems to have NTC on the outside of the metal, where the other one has it on a pin that is screwed in so that it's in the stream.
+    - Resistance is much less responsive than for the other flow sensor. This one seems to have the NTC on the outside of the metal, where the other one has it on a pin that is screwed in so that it's in the stream.
     - E.g. changed water from 10C to 54C (~5s IR temp.), resistance took >1min to change from 77kOhm to 28kOhm, would have taken even longer to reach 20kOhm. The other flow sensor (84.6-13.6kOhm range) went from 80kOhm to 24kOhm in 10s and to 16kOhm in 20s.
     - -> changed back to 1st flow sensor
+  - After changing back to 1st flow sensor the 2nd Wemos D1 mini broke? Post-mortem:
+    - Does not boot realiably anymore. Can connect via serial, but initially it just crash-looped with 'Fatal exception (0): epc1=0x4023a09c, ...'
+    - Not able to flash (or do anything with esptool): 'Failed to connect to ESP8266: Timed out waiting for packet header'
+      - Checked https://github.com/espressif/esptool#bootloader-wont-respond
 - 22.01.2020:
   - fix-logs.py to normalize logs
   - fix-logs.sh to delete spurious start/flow{1,3}/stop sequences, kept ~/shower.org.log (after fix-logs.py) to drop diff from InfluxDB (TODO)
+- 23.01.2020: Tried to debug bricked 2nd D1 mini again.
+  - Hall effect sensor was connected to 5V and signal on D5 is then also a square wave between 0 and 5V (checked yesterday on oscilloscope). Its sheet said 5V, but get same wave with 3.3V. Maybe should have connected it to 3.3V instead?
+  - Could that have killed it? Google search says Wemos D1 mini's GPIO pins should be 5V tolerant:
+    - https://forum.arduino.cc/index.php?topic=428521.msg2955576#msg2955576
+    - Some people say it could break it after some time. However, mine was running fine for 9 months and only broke after reconnecting the initial flow sensor, so more likely there was some problem there (but connections were fine).
+  - Now it started flashing, but then esptool stopped at 60% with exception 'Failed to write compressed data to flash after seq 8 (result was C100)'
+  - `esptool.py -b 9600 --port /dev/cu.wchusbserialfa130 chip_id` failed at `Running stub...` with `StopIteration`, but worked without `-b 9600`. Changed default baud rate for flashing back to 115200 and it flashed successfully from vscode...
