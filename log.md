@@ -41,4 +41,14 @@
     - https://forum.arduino.cc/index.php?topic=428521.msg2955576#msg2955576
     - Some people say it could break it after some time. However, mine was running fine for 9 months and only broke after reconnecting the initial flow sensor, so more likely there was some problem there (but connections were fine).
   - Now it started flashing, but then esptool stopped at 60% with exception 'Failed to write compressed data to flash after seq 8 (result was C100)'
-  - `esptool.py -b 9600 --port /dev/cu.wchusbserialfa130 chip_id` failed at `Running stub...` with `StopIteration`, but worked without `-b 9600`. Changed default baud rate for flashing back to 115200 and it flashed successfully from vscode...
+  - `esptool.py -b 9600 --port /dev/cu.wchusbserialfa130 chip_id` failed at `Running stub...` with `StopIteration`, but worked without `-b 9600`.
+  - Changed default baud rate for flashing back to 115200 and it flashed successfully from vscode...
+  - However, the module stil seems damaged. Only seldomly manages to connect to Wifi < 30s, mostly fails and restarts, also loses connection after it was established. On reset it often goes into the crash-loop mentioned above. Only fixed by re-flashing. -> Abandon.
+  - Resoldered both replacement Wemos D1 minis (only the ESP8266 onto the PCB). No change.
+  - Tried to fix the A0 on the previous Wemos D1 mini by replacing R16 (part of voltage divider to extend range from 1V to 3.2V) which only measured 167 kOhms instead of the 224 kOhms on the other two Wemos D1 minis. Desoldered replacement from the rusted one. Did not fix A0 being high at 3.3V instead of 0V.
+  - Desoldered R16 again. Now A0 was at 3.3V but the ESP's ADC pin at almost 0V (before at 1V).
+    - The schematic says: A0 -220kOhm-> ADC -> 100kOhm -> GND.
+    - A0-ADC was ~280kOhm with replaced R16. ADC-GND is the correct 100kOhm.
+    - The short (maybe to the RST pin which is 3.3V) must be inside the PCB. There aren't any components. The vias look normal.
+      - On the other one RST-A0 is infty, and A0-RST is 0Ohm, whereas here RST-A0 is 350kOhm?
+  - Could make/adjust my own voltage divider and use the 1V ADC pin instead of the 3.3V A0 instead.
