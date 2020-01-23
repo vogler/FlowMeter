@@ -3,17 +3,17 @@
 // https://github.com/esp8266/esp8266-wiki/wiki/Boot-Process#esp-boot-modes
 
 // flow
-byte hallPin = D5;      // hall-effect flow sensor
-float pulseFactor = 11; // pulses/second per litre/minute
+const byte hallPin = D5;      // hall-effect flow sensor
+const float pulseFactor = 11; // pulses/second per litre/minute
 
 // temperature
-byte tempPin = A0; // thermistor
-float R1 = 46800; // 47 kOhm resistor for voltage divider (measured 39.18 kOhm between A0 and GND)
+const byte tempPin = A0; // thermistor
+const float R1 = 46800; // 47 kOhm resistor for voltage divider (measured 39.18 kOhm between A0 and GND)
 float logR2, R2, T;
 // https://www.thinksrs.com/downloads/programs/Therm%20Calc/NTCCalibrator/NTCcalculator.htm
 // -> using simpler β model over Steinhart-Hart model
 // float c1 = 1.009249522e-03, c2 = 2.378405444e-04, c3 = 2.019202697e-07;
-float B = 3950;
+const float B = 3950;
 // Temperatures IR:NTC (IR temp. gun aimed at bathtub with shower head ~5cm above : calculated temp.)
 // middle:  33.6:36.6 33.1:36.2
 // coldest: 11.0:12.60 10.6:12.24 10.3:11.97
@@ -45,15 +45,20 @@ char buf[200];
 void setup_wifi() {
   delay(5);
   Serial.printf("Connecting to AP %s", WIFI_SSID);
+  const unsigned long start_time = millis();
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
-  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    delay(2000);
+  for (int i = 0; WiFi.waitForConnectResult() != WL_CONNECTED && i < 10; i++) {
+    delay(3000);
     Serial.print(".");
+  }
+  const float connect_time = (millis() - start_time) / 1000.;
+  Serial.println();
+  if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+    Serial.printf("Failed to connect to Wifi in %.3f seconds. Going to restart!", connect_time);
     ESP.restart();
   }
-  Serial.println();
-  Serial.print("IP address: ");
+  Serial.printf("Connected in %.3f seconds. IP address: ", connect_time);
   Serial.println(WiFi.localIP());
 }
 
@@ -144,7 +149,7 @@ void setup() {
   setup_mqtt();
   Serial.println("Ready to measure!");
 
-  pinMode(hallPin, INPUT_PULLUP);
+  pinMode(hallPin, INPUT_PULLUP); // there is no internal pull-down
   attachInterrupt(digitalPinToInterrupt(hallPin), pulseCounter, FALLING); // FALLING = transition from HIGH to LOW
 }
 
@@ -182,8 +187,8 @@ void loop() {
       total_ml += flow_ml_s;
       OLED.clearDisplay();
       // frame for layouting during development
-      OLED.drawLine(0, 0, 0, 64, WHITE);
-      OLED.drawLine(127, 0, 127, 64, WHITE);
+      // OLED.drawLine(0, 0, 0, 64, WHITE);
+      // OLED.drawLine(127, 0, 127, 64, WHITE);
       OLED.setCursor(0, 12);
 
       Serial.printf("Pulses: %d", pulses); // since last interrupt
