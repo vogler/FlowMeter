@@ -1,5 +1,8 @@
 # FlowMeter
-Flow meter for tracking shower usage (MQTT -> Telegraf -> InfluxDB -> Chronograf).
+Flow meter for tracking shower usage (every second: flow, temperature, after 30s of no flow: total volume, duration).
+
+WiFi -> MQTT -> Telegraf -> InfluxDB -> Chronograf:
+![chronograf](images/graph-chronograf.png)
 
 First used a Wemos D1 mini, then a Doit ESP32.
 
