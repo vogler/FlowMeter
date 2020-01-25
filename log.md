@@ -64,3 +64,7 @@
   - Tried Wemos again, but still 'Failed to connect to ESP8266: Timed out waiting for packet header'.
   - Installed Doit ESP32 with flow sensor on 5V and signal pin directly into D15.
   - Temperatures were a bit too low (cold -3, middle -7, hot -10), calibrated with IR gun. Introduced tempFactor 1.2 (range was 1.20-1.35) and tempOffset 1.0 to fit the curve. tempFactor 1.25 without offset was also ok, but a bit too cold in the cold range.
+- 25.01.2020: seems like everything is working fine now with Doit ESP32 and replacement power supply.
+  - Reconnected 3 times to MQTT today. WiFi seems not to be super stable.
+  - Still there's the issue with the light switch triggering interrupts.
+    - [This guy](https://www.esp8266.com/viewtopic.php?f=32&t=10410) said he had the same problem and it was fixed by putting a ferrite bead around the power cable. Had some mini USB cables with ferrite beads, but they couldn't be taken off. [Ordered](https://trade.aliexpress.com/order_detail.htm?spm=a2g0s.9042311.0.0.1dec4c4dmFILzY&orderId=3002801436482588) [5x 5mm ferrite cores](https://www.aliexpress.com/item/32845774177.html?spm=a2g0s.9042311.0.0.1dec4c4dmFILzY).
