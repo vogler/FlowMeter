@@ -29,14 +29,14 @@
     - E.g. changed water from 10C to 54C (~5s IR temp.), resistance took >1min to change from 77kOhm to 28kOhm, would have taken even longer to reach 20kOhm. The other flow sensor (84.6-13.6kOhm range) went from 80kOhm to 24kOhm in 10s and to 16kOhm in 20s.
     - -> changed back to 1st flow sensor
   - After changing back to 1st flow sensor the 2nd Wemos D1 mini broke? Post-mortem:
-    - Does not boot realiably anymore. Can connect via serial, but initially it just crash-looped with 'Fatal exception (0): epc1=0x4023a09c, ...'
+    - Does not boot reliably anymore. Can connect via serial, but initially it just crash-looped with 'Fatal exception (0): epc1=0x4023a09c, ...'
     - Not able to flash (or do anything with esptool): 'Failed to connect to ESP8266: Timed out waiting for packet header'
       - Checked https://github.com/espressif/esptool#bootloader-wont-respond
 - 22.01.2020:
   - fix-logs.py to normalize logs
   - fix-logs.sh to delete spurious start/flow{1,3}/stop sequences, kept ~/shower.org.log (after fix-logs.py) to drop diff from InfluxDB (TODO)
 - 23.01.2020: Tried to debug bricked 2nd D1 mini again.
-  - Hall effect sensor was connected to 5V and signal on D5 is then also a square wave between 0 and 5V (checked yesterday on oscilloscope). Its sheet said 5V, but get same wave with 3.3V. Maybe should have connected it to 3.3V instead?
+  - Hall effect sensor was connected to 5V and signal on D5 is then also a square wave between 0 and 5V (checked yesterday on oscilloscope with the 2nd flow sensor). For the 2nd flow sensor I get the same wave with 3.3V. Maybe should have connected it to 3.3V instead? Later found out that only the 2nd one works with 3.3V whereas the 1st flow sensor needs at least 5V.
   - Could that have killed it? Google search says Wemos D1 mini's GPIO pins should be 5V tolerant:
     - https://forum.arduino.cc/index.php?topic=428521.msg2955576#msg2955576
     - Some people say it could break it after some time. However, mine was running fine for 9 months and only broke after reconnecting the initial flow sensor, so more likely there was some problem there (but connections were fine).
@@ -52,3 +52,15 @@
     - The short (maybe to the RST pin which is 3.3V) must be inside the PCB. There aren't any components. The vias look normal.
       - On the other one RST-A0 is infty, and A0-RST is 0Ohm, whereas here RST-A0 is 350kOhm?
   - Could make/adjust my own voltage divider and use the 1V ADC pin instead of the 3.3V A0 instead.
+- Abandon Wemos D1 minis and try Doit ESP32 DevKit V1 board.
+  - Needed larger breadboard and some wiring below since it's so wide that only one row on one side is free.
+  - Needed to adjust code since some includes are different (used ifdef, also to switch pin config).
+  - Hardware differences:
+    - It has 6 usable ADC pins (only ADC1 since ADC2 is shared with Wifi) with 12bit resolution instead of one A0 with 10bit on the Wemos. [This](https://microcontrollerslab.com/adc-esp32-measuring-voltage-example/) claims slightly non-linear behavior, but linked issue claims it's fixed; TODO test.
+    - Wemos says its GPIO pins are 5V tolerant, whereas this only mentions 3.3V.
+  - Test on breadboard with 2nd flow sensor on 3.3V worked. Tried in bathroom with 1st flow sensor and didn't work. Only than noticed that the 1st flow sensor really needs 5V as opposed to the 2nd flow sensor. Checked with oscilloscope: with 3.3V it always stays high, wanted to check with 5V and only then noticed that the breadboard power supply gave 7V instead of 5V when switched from 3.3V to 5V. Checked flow sensor with 7V and got square wave. First thought the breadboard power supply broke, but then noticed that it gave 5V with another micro USB power supply. Checked bathroom micro USB power supply and it really is at 7V now... When did that break and did that fry the Wemos?
+  - Measured current GND-SIG on 1st flow sensor on 5V to see if I need a level shifter or current limiting resistor to use it on the 3.3V specified ESP32 pins at all.
+    - 80uA at 0V setting; 495uA at 5V setting. Disconnected from power, 10kOhm between SIG-GND and SIG-VCC. Should be fine.
+  - Tried Wemos again, but still 'Failed to connect to ESP8266: Timed out waiting for packet header'.
+  - Installed Doit ESP32 with flow sensor on 5V and signal pin directly into D15.
+  - Temperatures were a bit too low (cold -3, middle -7, hot -10), calibrated with IR gun. Introduced tempFactor 1.2 (range was 1.20-1.35) and tempOffset 1.0 to fit the curve. tempFactor 1.25 without offset was also ok, but a bit too cold in the cold range.

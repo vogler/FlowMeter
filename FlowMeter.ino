@@ -1,35 +1,62 @@
 // flow rate code based on https://maker.pro/arduino/tutorial/how-to-interface-arduino-with-flow-rate-sensor-to-measure-liquid
-// If it fails to flash/boot, it's likely that pin D8 is high (boot from SD-card) and has to be connected to GND.
-// https://github.com/esp8266/esp8266-wiki/wiki/Boot-Process#esp-boot-modes
+
+// First used a Wemos D1 mini (ESP8266) which broke. Then switched to a Doit ESP32 DevKit. See log.md.
+#define ESP32 // Comment out this line to change to ESP8266 setup.
+
+#ifdef ESP32 // Doit ESP32 DevKit V1
+  #define hallPin 15 // D15
+  #define tempPin 36  // VP
+  #define analogMax 4095 // at 3.2 V
+  #define tempFactor 1.25 // temperatures were too low (cold -3, middle -7, hot -10), calibrated with IR gun
+  #define tempOffset 1.0
+  // OLED: SCK/SCL=D22, SDA=D21
+#else // Wemos D1 mini
+  // If it fails to flash/boot, it's likely that pin D8 is high (boot from SD-card) and has to be connected to GND. https://github.com/esp8266/esp8266-wiki/wiki/Boot-Process#esp-boot-modes
+  #define hallPin D5
+  #define tempPin A0
+  #define analogMax 1023 // at 3.2 V
+  #define tempFactor 1.0
+  #define tempOffset 0.0
+  // OLED: SCK/SCL=D1, SDA=D2
+#endif
 
 // flow
-const byte hallPin = D5;      // hall-effect flow sensor
+// hallPin: hall-effect flow sensor signal pin used for interrupt
 const float pulseFactor = 11; // pulses/second per litre/minute
 
 // temperature
-const byte tempPin = A0; // thermistor
-const float R1 = 46800; // 47 kOhm resistor for voltage divider (measured 39.18 kOhm between A0 and GND)
+// tempPin: NTC thermistor connected to analog input pin
+const float R1 = 47200; // 47 kOhm resistor for voltage divider (measured 39.18 kOhm between A0 and GND)
 float logR2, R2, T;
 // https://www.thinksrs.com/downloads/programs/Therm%20Calc/NTCCalibrator/NTCcalculator.htm
 // -> using simpler β model over Steinhart-Hart model
 // float c1 = 1.009249522e-03, c2 = 2.378405444e-04, c3 = 2.019202697e-07;
 const float B = 3950;
-// Temperatures IR:NTC (IR temp. gun aimed at bathtub with shower head ~5cm above : calculated temp.)
-// middle:  33.6:36.6 33.1:36.2
-// coldest: 11.0:12.60 10.6:12.24 10.3:11.97
-// warmest: 52.3:61.29 52.3:62.16
 
 // 128x32 OLED display SSD1306
 #include <Adafruit_GFX.h>
 #include <Fonts/FreeSans9pt7b.h>
 #include <Adafruit_SSD1306.h>
-Adafruit_SSD1306 OLED(0); // default I2C: D1=SCK, D2=SDA
+#ifdef ESP32
+  #include <Wire.h> // only needed for ESP32; Wemos D1 mini initialized with Adafruit_SSD1306 OLED(0); which gives an IntegerDivideByZero exception on the ESP32
+  Adafruit_SSD1306 OLED(128, 32, &Wire, -1); // default I2C pins for DOIT ESP32: SCK=D22, SDA=D21
+#else
+  Adafruit_SSD1306 OLED(0); // default I2C pins for Wemos D1 mini: SCK=D1, SDA=D2
+#endif
 
 // WiFi
-#include <ESP8266WiFi.h>
+#ifdef ESP32
+  #include <WiFi.h>
+#else
+  #include <ESP8266WiFi.h>
+#endif
 WiFiClient wifi;
 // OTA update
-#include <ESP8266mDNS.h>
+#ifdef ESP32
+  #include <ESPmDNS.h>
+#else
+  #include <ESP8266mDNS.h>
+#endif
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 // MQTT
@@ -49,7 +76,10 @@ void setup_wifi() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   for (int i = 0; WiFi.waitForConnectResult() != WL_CONNECTED && i < 10; i++) {
-    delay(3000);
+    #ifdef ESP32
+      WiFi.begin(WIFI_SSID, WIFI_PASS); // for ESP32 also had to be moved inside the loop, otherwise only worked on every second boot, https://github.com/espressif/arduino-esp32/issues/2501#issuecomment-548484502
+    #endif
+    delay(1000);
     Serial.print(".");
   }
   const float connect_time = (millis() - start_time) / 1000.;
@@ -200,9 +230,9 @@ void loop() {
       OLED.print(total_ml / 1000.0, 2);
       OLED.println(" l");
 
-      int vo = analogRead(A0); // max. 1023.0 at 3.2 V
+      int vo = analogRead(tempPin);
       Serial.printf("  A0: %d", vo);
-      R2 = R1 * (1023.0 / (float)vo - 1.0);
+      R2 = R1 * (analogMax / (float)vo - 1.0);
       // logR2 = log(R2);
       Serial.printf("  R2: %.2f", R2);
       // Serial.printf("  logR2: %.2f", logR2);
@@ -211,6 +241,7 @@ void loop() {
       float T1 = 25 + 273.15;
       float ln = log(50000 / R2);
       T = T1 * B / ln / (B / ln - T1) - 273.15;
+      T = (T + tempOffset) * tempFactor; // device-specific fix
       Serial.printf("  Temperature: %f C", T);
       OLED.setCursor(80, 12);
       OLED.print(T);

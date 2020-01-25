@@ -1,0 +1,8 @@
+{
+    "sketch": "FlowMeter.ino",
+    "board": "esp32:esp32:esp32doit-devkit-v1",
+    "configuration": "FlashFreq=80,UploadSpeed=921600,DebugLevel=none",
+    "programmer": "AVRISP mkII",
+    "port": "/dev/cu.SLAB_USBtoUART",
+    "output": "/tmp/vsc_arduino_build"
+}

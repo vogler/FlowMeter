@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "defines": [
+                "ARDUINO=10800"
+            ],
+            "includePath": [
+                "${workspaceRoot}",
+                "/Users/voglerr/Library/Arduino15/packages/esp8266/hardware/esp8266/2.6.3/**",
+                "/Users/voglerr/Library/Arduino15/packages/esp8266/tools/**",
+                "/Users/voglerr/Documents/Arduino/hardware/tools/**",
+                "/Users/voglerr/Documents/Arduino/libraries/**"
+            ],
+            "forcedInclude": [
+                "/Users/voglerr/Library/Arduino15/packages/esp8266/hardware/esp8266/2.6.3/cores/esp8266/Arduino.h",
+                "/Users/voglerr/Library/Arduino15/packages/esp8266/hardware/esp8266/2.6.3/variants/d1_mini/pins_arduino.h"
+            ],
+            "intelliSenseMode": "clang-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}
