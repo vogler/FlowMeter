@@ -3,12 +3,13 @@
         {
             "name": "Mac",
             "defines": [
-                "ARDUINO=10800"
+                "ARDUINO=10810"
             ],
             "includePath": [
                 "${workspaceRoot}",
+                "/Users/voglerr/Documents/Arduino/libraries/**",
                 "/Users/voglerr/Library/Arduino15/packages/esp32/hardware/esp32/1.0.4/**",
-                "/Users/voglerr/Documents/Arduino/libraries/**"
+                "/Users/voglerr/Library/Arduino15/packages/esp32/tools/**"
             ],
             "forcedInclude": [],
             "intelliSenseMode": "clang-x64",
