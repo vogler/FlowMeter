@@ -1,7 +1,7 @@
 {
     "sketch": "FlowMeter.ino",
     "board": "esp8266:esp8266:d1_mini",
-    "configuration": "xtal=80,vt=flash,exception=disabled,eesz=4M,ip=lm2f,dbg=Disabled,lvl=None____,wipe=none,baud=921600",
+    "configuration": "xtal=80,vt=flash,exception=disabled,ssl=all,eesz=4M,ip=lm2f,dbg=Disabled,lvl=None____,wipe=none,baud=921600",
     "programmer": "AVRISP mkII",
     "port": "/dev/cu.wchusbserialfa130",
     "output": "/tmp/vsc_arduino_build"

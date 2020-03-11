@@ -58,9 +58,9 @@
   - Hardware differences:
     - It has 6 usable ADC pins (only ADC1 since ADC2 is shared with Wifi) with 12bit resolution instead of one A0 with 10bit on the Wemos. [This](https://microcontrollerslab.com/adc-esp32-measuring-voltage-example/) claims slightly non-linear behavior, but linked issue claims it's fixed; TODO test.
     - Wemos says its GPIO pins are 5V tolerant, whereas this only mentions 3.3V.
-  - Test on breadboard with 2nd flow sensor on 3.3V worked. Tried in bathroom with 1st flow sensor and didn't work. Only than noticed that the 1st flow sensor really needs 5V as opposed to the 2nd flow sensor. Checked with oscilloscope: with 3.3V it always stays high, wanted to check with 5V and only then noticed that the breadboard power supply gave 7V instead of 5V when switched from 3.3V to 5V. Checked flow sensor with 7V and got square wave. First thought the breadboard power supply broke, but then noticed that it gave 5V with another micro USB power supply. Checked bathroom micro USB power supply and it really is at 7V now... When did that break and did that fry the Wemos?
+  - Test on breadboard with 2nd flow sensor on 3.3V worked. Tried in bathroom with 1st flow sensor and didn't work. Only than noticed that the 1st flow sensor really needs 5V as opposed to the 2nd flow sensor. Checked with oscilloscope: with 3.3V it always stays high, wanted to check with 5V and only then noticed that the breadboard power supply gave 7V instead of 5V when switched from 3.3V to 5V. Checked flow sensor with 7V and got square wave. First thought the breadboard power supply broke, but then noticed that it gave 5V with another micro USB power supply. Checked bathroom micro USB power supply and it really is at 7V now... When did that break and did that fry the Wemos? Checked power supply again on 11.03.2020: only shows 7V at 0A, but 5.5V at 0.05A, so that was probably not a problem.
   - Measured current GND-SIG on 1st flow sensor on 5V to see if I need a level shifter or current limiting resistor to use it on the 3.3V specified ESP32 pins at all.
-    - 80uA at 0V setting; 495uA at 5V setting. Disconnected from power, 10kOhm between SIG-GND and SIG-VCC. Should be fine.
+    - 80uA at 0V setting; 495uA at 5V setting. Disconnected from power, measured 10kOhm between SIG-GND and SIG-VCC. Should be fine.
   - Tried Wemos again, but still 'Failed to connect to ESP8266: Timed out waiting for packet header'.
   - Installed Doit ESP32 with flow sensor on 5V and signal pin directly into D15.
   - Temperatures were a bit too low (cold -3, middle -7, hot -10), calibrated with IR gun. Introduced tempFactor 1.2 (range was 1.20-1.35) and tempOffset 1.0 to fit the curve. tempFactor 1.25 without offset was also ok, but a bit too cold in the cold range.
@@ -68,3 +68,11 @@
   - Reconnected 3 times to MQTT today. WiFi seems not to be super stable.
   - Still there's the issue with the light switch triggering interrupts.
     - [This guy](https://www.esp8266.com/viewtopic.php?f=32&t=10410) said he had the same problem and it was fixed by putting a ferrite bead around the power cable. Had some mini USB cables with ferrite beads, but they couldn't be taken off. [Ordered](https://trade.aliexpress.com/order_detail.htm?spm=a2g0s.9042311.0.0.1dec4c4dmFILzY&orderId=3002801436482588) [5x 5mm ferrite cores](https://www.aliexpress.com/item/32845774177.html?spm=a2g0s.9042311.0.0.1dec4c4dmFILzY).
+- 26.02.2020: disconnected Doit ESP32 since it was not reliable:
+  - Sometimes it did not start measuring. Needed to be reset then ((un)plug power).
+  - Sometimes it kept measuring pulses after flow has stopped. This happend more often after some time. Needed to be reset to make it stop.
+  - Sometimes it reported single temperatures -340C up to 310 in between correct temperatures.
+- 29.02.2020: Got ferrite beads.
+- 06.03.2020: Got three new Wemos D1 minis.
+- 11.03.2020: Removed Doit ESP32 and installed Wemos D1 mini again (still had its breadboard).
+  - Noticed that flow sensor does not work anymore. USB via MBP and power supply (PS) delivers 5.04V, but Wemos D1 mini only has 4.6V on 5V with MBP and only 3.9-4.15V with PS. Thought that is the problem. But also if connected to the 5V directly it does not show any pulses on oscilloscope anymore. 

@@ -1,7 +1,7 @@
 // flow rate code based on https://maker.pro/arduino/tutorial/how-to-interface-arduino-with-flow-rate-sensor-to-measure-liquid
 
-// First used a Wemos D1 mini (ESP8266) which broke. Then switched to a Doit ESP32 DevKit. See log.md.
-#define ESP32 // Comment out this line to change to ESP8266 setup.
+// First used a Wemos D1 mini (ESP8266) which broke. Then switched to a Doit ESP32 DevKit. Then switched back because it had bugs. See log.md.
+// #define ESP32 // Comment out this line to change to ESP8266 setup.
 
 #ifdef ESP32 // Doit ESP32 DevKit V1
   #define hallPin 15 // D15
