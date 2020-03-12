@@ -75,4 +75,10 @@
 - 29.02.2020: Got ferrite beads.
 - 06.03.2020: Got three new Wemos D1 minis.
 - 11.03.2020: Removed Doit ESP32 and installed Wemos D1 mini again (still had its breadboard).
-  - Noticed that flow sensor does not work anymore. USB via MBP and power supply (PS) delivers 5.04V, but Wemos D1 mini only has 4.6V on 5V with MBP and only 3.9-4.15V with PS. Thought that is the problem. But also if connected to the 5V directly it does not show any pulses on oscilloscope anymore. 
+  - Noticed that flow sensor does not work anymore (signal stays at 5V so it's not the cables). USB via MBP and power supply (PS) delivers 5.04V, but Wemos D1 mini only has 4.6V on 5V with MBP and only 3.9-4.15V with PS. Thought that is the problem. But also if connected to the 5V directly it does not show any pulses on oscilloscope anymore.
+- 12.03.2020: Connected the 2nd flow sensor which works fine and shows pulses at 5V (and also at 3.2V).
+  - Measured temperature: coldest IR 11.7C, NTC 15.87; turned to hottest; IR 56C 24C NTC after 2s; 34C after 40s; 58.2C IR, 42C NTC after 1m30s; 45C NTC after 2m30s. Seems to be a logistic curve, since it takes longer at the to reach the extremes, but still much slower than the 1st flow sensor NTC.
+  - Let 25C water run, took >2m to reach 48kOhm, probably also 50kOhm at 25C but very slow to reach. Set R25C to 47000.
+  - Used [thermistor calculator](https://www.thinksrs.com/downloads/programs/Therm%20Calc/NTCCalibrator/NTCcalculator.htm) with pairs 77kOhm @ 10C, 47kOhm @ 25C, 20kOhm @ 55C to calculate new beta model coefficient of 2778.34, which aligned perfectly with the Steinhart-Hart model curve. Ok, but takes several minutes to stabilize at a temperature.
+  - [ordered](https://trade.aliexpress.com/order_detail.htm?spm=a2g0s.9042311.0.0.27424c4dmRTqEt&orderId=96461396622588) ([6.20$](https://de.aliexpress.com/item/33012767610.html?spm=a2g0s.9042311.0.0.5a2d4c4di8aCgb)) 1st flow sensor again, but male-male.
+  - Put ferrite bead around USB cable from power supply.

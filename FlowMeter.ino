@@ -31,7 +31,8 @@ float logR2, R2, T;
 // https://www.thinksrs.com/downloads/programs/Therm%20Calc/NTCCalibrator/NTCcalculator.htm
 // -> using simpler β model over Steinhart-Hart model
 // float c1 = 1.009249522e-03, c2 = 2.378405444e-04, c3 = 2.019202697e-07;
-const float B = 3950;
+const float B = 2778.34; // 1st flow sensor: 3950; 2nd flow sensor: 2778.34
+const unsigned int R25C = 47000; // NTC resistance at 25C; 1st flow sensor: 50000; 2nd flow sensor reached 47000 after >2m
 
 // 128x32 OLED display SSD1306
 #include <Adafruit_GFX.h>
@@ -239,7 +240,7 @@ void loop() {
       // T = (1.0 / (c1 + c2 * logR2 + c3 * logR2 * logR2 * logR2)) - 273.15;
       // T2= T1*B/ln(R1/R2)  /  ( B/ln(R1/R2) - T1)
       float T1 = 25 + 273.15;
-      float ln = log(50000 / R2);
+      float ln = log(R25C / R2);
       T = T1 * B / ln / (B / ln - T1) - 273.15;
       T = (T + tempOffset) * tempFactor; // device-specific fix
       Serial.printf("  Temperature: %f C", T);
