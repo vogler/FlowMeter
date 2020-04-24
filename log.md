@@ -82,3 +82,4 @@
   - Used [thermistor calculator](https://www.thinksrs.com/downloads/programs/Therm%20Calc/NTCCalibrator/NTCcalculator.htm) with pairs 77kOhm @ 10C, 47kOhm @ 25C, 20kOhm @ 55C to calculate new beta model coefficient of 2778.34, which aligned perfectly with the Steinhart-Hart model curve. Ok, but takes several minutes to stabilize at a temperature.
   - [ordered](https://trade.aliexpress.com/order_detail.htm?spm=a2g0s.9042311.0.0.27424c4dmRTqEt&orderId=96461396622588) ([6.20$](https://de.aliexpress.com/item/33012767610.html?spm=a2g0s.9042311.0.0.5a2d4c4di8aCgb)) 1st flow sensor again, but male-male.
   - Put ferrite bead around USB cable from power supply.
+- 24.04.2020: Replaced 2nd flow sensor with the 1st flow sensor replacement. Works and temperature reacts much faster again. Quick test with old values: min 12C IR, 14C NTC; max 58C IR, 57C NTC.
