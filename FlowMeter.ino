@@ -97,14 +97,13 @@ void setup_wifi() {
 
 void setup_OTA() {
   ArduinoOTA.onStart([]() {
-    String type;
+    Serial.println("OTA: Start updating ");
     if (ArduinoOTA.getCommand() == U_FLASH) {
-      type = "sketch";
+      Serial.println("sketch");
     } else { // U_SPIFFS
-      type = "filesystem";
+      Serial.println("filesystem");
     }
     // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-    Serial.println("OTA: Start updating " + type);
     OLED_stat("OTA start");
   });
   ArduinoOTA.onEnd([]() {
@@ -133,15 +132,15 @@ void setup_OTA() {
   ArduinoOTA.begin();
 }
 
+char clientId[32];
+
 void mqtt_connect(){
   while (!mqtt.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    // Create a random client ID
-    String clientId = "ESP8266Client-";
-    clientId += String(random(0xffff), HEX);
-    if (mqtt.connect(clientId.c_str())) {
-      Serial.printf("connected as %s to mqtt://%s\n", clientId.c_str(), MQTT_SERVER);
-      mqtt.publish(MQTT_TOPIC "/status", json("\"millis\": %lu, \"event\": \"connect\", \"clientId\": \"%s\"", millis(), clientId.c_str())); // TODO millis() is really just the ms, not full unix timestamp!
+    snprintf(clientId, sizeof(clientId), "FlowMeter-%04x", random(0xffff)); // 4 chars for hex id
+    Serial.printf("Connect MQTT to %s as %s ... ", MQTT_SERVER, clientId);
+    if (mqtt.connect(clientId)) {
+      Serial.printf("connected to mqtt://%s\n", MQTT_SERVER);
+      mqtt.publish(MQTT_TOPIC "/status", json("\"millis\": %lu, \"event\": \"connect\", \"clientId\": \"%s\"", millis(), clientId)); // TODO millis() is really just the ms, not full unix timestamp!
       // mqtt.subscribe("");
     } else {
       Serial.printf("failed, rc=%d. retry in 5s.\n", mqtt.state());
